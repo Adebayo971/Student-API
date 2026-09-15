@@ -1,14 +1,26 @@
-import studentModel from "../model/StudentModel.js";
+import studentModel from "../model/StudentModel.js"
+import bcrypt from "bcrypt"
 
 // 1. Create a Student Account
 const createStudent = async (req, res) => {
   try {
     const { name, registrationNumber, email } = req.body;
+    
+    // Check if email exists
+    const exists = await studentModel.findOne({ email })
+    if(exists){
+      return res.status(400).json({ message: "Email already exists" })
+    }
+
+    const genSalt = await bcrypt.genSalt(10)
+    const hashRegNo = await bcrypt.hash(registrationNumber, genSalt)
+    
     const student = await studentModel.create({
       name,
-      registrationNumber,
-      email,
+      registrationNumber: hashRegNo,
+      email
     });
+    
     return res.status(201).json({
       message: "Student created succesfully",
       data: student,
@@ -19,6 +31,31 @@ const createStudent = async (req, res) => {
     });
   }
 };
+
+// login - FIXED
+const studentLogin = async (req, res) => {
+  try {
+    const { registrationNumber, email } = req.body
+    const user = await studentModel.findOne({ email })
+    
+    if (!user) {
+      return res.status(404).json({
+        message: "You did not have an account"
+      })
+    } 
+
+    const isMatch = await bcrypt.compare(registrationNumber, user.registrationNumber)
+    
+    if (!isMatch) {
+      return res.status(400).json({ message: "Wrong email or registration number" })
+    }
+    
+    return res.status(200).json({ message: "Login succesful", data: user })
+
+  } catch (error) {
+    return res.status(500).json({ message: error.message }) 
+  }
+}
 
 // 2. Update Student Profile
 const updateStudentName = async (req, res) => {
@@ -73,9 +110,9 @@ const getOneStudent = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-        message: error.message
+      message: error.message
     })
   }
 };
 
-export {createStudent, updateStudentName, deleteStudent, getOneStudent}
+export { createStudent, updateStudentName, deleteStudent, getOneStudent, studentLogin }
