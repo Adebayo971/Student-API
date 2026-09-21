@@ -7,13 +7,15 @@ const app = express()
 const port = 4444
 import studentRoute from "./routes/studentRoutes.js"
 import projectRoute from "./routes/projectRoutes.js";
+import userRoute from "./routes/userRoute.js";
 app.use(express.json())
 app.use("/students", studentRoute)
 app.use("/projects", projectRoute)
+app.use("/users", userRoute)
 const compass_string = process.env.COMPASS_STRING
 const atlas_string = process.env.ATLAS_STRING
 
-mongoose.connect(atlas_string).then(() => { console.log("mongoDB is connected...");
+mongoose.connect(compass_string).then(() => { console.log("mongoDB is connected...");
 }).catch((err) => { console.log("MongoDB fail to connect", err.message);
 })
 app.get("/" , (req, res) => {

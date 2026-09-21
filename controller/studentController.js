@@ -32,7 +32,7 @@ const createStudent = async (req, res) => {
   }
 };
 
-// login - FIXED
+// login
 const studentLogin = async (req, res) => {
   try {
     const { registrationNumber, email } = req.body
